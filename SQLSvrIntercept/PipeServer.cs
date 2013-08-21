@@ -14,9 +14,11 @@ namespace SQLSvrIntercept
       
         private NamedPipeServerStream _pipeServer;
         private Thread _pipeThread;
+        private bool _blockQuery;
 
-        public PipeServer()
+        public PipeServer(bool blockQuery)
         {
+            _blockQuery = blockQuery;
 
         }
 
@@ -51,19 +53,37 @@ namespace SQLSvrIntercept
                 pSec,          
                 HandleInheritability.Inheritable))
             {
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("(pipe thread) Waiting for connection...");
+                Console.ForegroundColor = ConsoleColor.Gray;
 
                 try
                 {
                     _pipeServer.WaitForConnection();
 
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("(pipe thread) Client connected.");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+
                     while (true)
                     {
-                        byte[] readBuf = new byte[MAX_STRING_CCH*2];
-                        int cbRead = _pipeServer.Read(readBuf, 0, MAX_STRING_CCH*2);
+                        byte[] readBuf = new byte[MAX_STRING_CCH * 2];
 
-                        Console.WriteLine(Encoding.Unicode.GetString(readBuf, 0, cbRead));
+                        int cbRead = _pipeServer.Read(readBuf, 0, MAX_STRING_CCH * 2);
+
+                        string str = Encoding.Unicode.GetString(readBuf, 0, cbRead);
+
+                        Console.WriteLine(str);
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         Console.WriteLine("--------------------------------------------------------");
+                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                        if (_blockQuery)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("(pipe thread) QUERY ABORTED");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        }
                         
                     }
                 }

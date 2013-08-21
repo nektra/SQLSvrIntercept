@@ -19,5 +19,6 @@ namespace SQLSvrIntercept
     class UnknownTargetFunctionParamsException : Exception { }
     class NativeDllLoadException : Exception { }
     class PipeThreadRunException : Exception { }
+    class DeviareDBNotFoundException : Exception { }
 
 }
