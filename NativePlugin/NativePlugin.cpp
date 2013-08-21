@@ -13,6 +13,8 @@ static HANDLE g_hPipe;
 
 DWORD gRVA_SQLStrings_CbGetChars;
 
+static BOOL g_fBlockQuery;
+
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -83,6 +85,7 @@ extern "C"  HRESULT WINAPI OnLoad()
 
 extern "C" HRESULT WINAPI OnUnload()
 {
+
 	d_printf(__FUNCTIONW__);
 	return S_OK;
 }
@@ -101,8 +104,18 @@ extern "C" HRESULT WINAPI OnHookAdded(__in INktHookInfo *lpHookInfo, __in DWORD 
 	CComBSTR funcName;
 	lpHookInfo->get_FunctionName(&funcName);
 
-	if (funcName == L"CSQLSource::Execute")
+	d_printf(L"FuncName:%s\n", funcName);
+
+	if (funcName == L"CSQLSource_Execute")
 	{
+		g_fBlockQuery = FALSE;
+
+		if (szParametersW[0] == L'1')
+		{
+			d_printf(L"Query abort Mode = ENABLED");
+			g_fBlockQuery = TRUE;
+		}
+
 		d_printf(L"Interception hook added; connecting to pipe server");
 		if (!ConnectToPipeServer())
 		{
@@ -127,6 +140,7 @@ extern "C" HRESULT WINAPI OnFunctionCall(__in INktHookInfo *lpHookInfo, __in DWO
 	lpHookCallInfoPlugin->get_Register(eNktRegister::asmRegRcx, &pThis);
 	CSQLStrings_vtable* pSQLStrings = (CSQLStrings_vtable*) pThis;	
 
+
 	if (g_hPipe)
 	{
 		// Get query string and transmit through pipe
@@ -141,6 +155,13 @@ extern "C" HRESULT WINAPI OnFunctionCall(__in INktHookInfo *lpHookInfo, __in DWO
 	else
 	{
 		d_printf(L"No pipe handle!");
+	}
+
+	if (g_fBlockQuery)
+	{
+
+		lpHookCallInfoPlugin->SkipCall();
+		lpHookCallInfoPlugin->FilterSpyMgrEvent();
 	}
 
 	return S_OK;

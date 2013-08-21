@@ -37,6 +37,18 @@ __interface CSQLStrings_vtable
 	virtual long FPostCacheLookup(void*,void *) = 0;
 	virtual long OnTransformComplete(void*,bool) = 0;
 	virtual long CbGetChars(wchar_t *,int) = 0;
+	virtual long CbMoveTo(int) = 0;
+	virtual long EssPrepRecompile(void*, void*) = 0;
+    virtual long InsertIntoCache(void*) = 0;
+	virtual long ResetStateToInitial(void*) = 0;
+	virtual long ResetCharsImp(void) = 0;
+	virtual long CbSize(void) = 0;
+	virtual long PtrGetCmd(void *,bool) = 0;
+	virtual long FUnivParam(void)  = 0;
+	virtual long FTemplatesPresent(void) = 0;
+	virtual long PiMedObject(void) = 0;
+	virtual long MDObjType(void) = 0;
+
 };
 
 #endif
